@@ -3,7 +3,6 @@ package com.ccnt.cado.bean;
 public class MetricData {
 	private String name;
 	private Object value;
-	private String unit;
 	
 	public MetricData() {
 		super();
@@ -14,12 +13,6 @@ public class MetricData {
 		this.value = value;
 	}
 	
-	public MetricData(String name, Object value, String unit) {
-		super();
-		this.name = name;
-		this.value = value;
-		this.unit = unit;
-	}
 	
 	public String getName() {
 		return name;
@@ -32,11 +25,5 @@ public class MetricData {
 	}
 	public void setValue(Object value) {
 		this.value = value;
-	}
-	public String getUnit() {
-		return unit;
-	}
-	public void setUnit(String unit) {
-		this.unit = unit;
 	}
 }

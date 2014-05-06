@@ -18,6 +18,8 @@ import com.ccnt.cado.exception.RestException;
 import com.ccnt.cado.util.RestClient;
 import com.ccnt.cado.util.SSHClient;
 
+import static com.ccnt.cado.bean.MonitorObject.*;
+
 public class CloudifyHostDataFetcher implements HostDataFetcher{
 	private SSHClient ssh;
 	private RestClient rest;
@@ -40,14 +42,12 @@ public class CloudifyHostDataFetcher implements HostDataFetcher{
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Host> fetchData(){
-		List<Host> result = new ArrayList<Host>();
+	public void fetchData(List<Host> hosts){
 		if(config == null){
-			return result;
+			return ;
 		}
 		String url = "http://";
-		url += config.getHost() + ":" + config.getRestPort() + "/" +config.getVersion() +
-				"/templates";
+		url += config.getHost() + ":" + config.getRestPort() + config.getUrls().get(CloudifyConfig.TEMPLATES_URL);
 		try {
 			String response = rest.get(url);
 			Map<?, ?> map = mapper.readValue(response, Map.class);
@@ -60,13 +60,23 @@ public class CloudifyHostDataFetcher implements HostDataFetcher{
 					String password = (String) (tempDes.containsKey("password") ? tempDes.get("password") : null);
 					List<Map<?,?>> nodes = (List<Map<?, ?>>) ((Map<?, ?>) tempDes.get("custom")).get("nodesList");
 					for(Map<?,?> node : nodes){
-						CloudifyHost host = new CloudifyHost();
-						host.setAddress((String)node.get("host-list"));
-						host.setName((String)node.get("host-list"));
-						host.setUsername(node.containsKey("username") ? (String)node.get("username") : username );
-						host.setPassword(node.containsKey("password") ? (String)node.get("password") : password );
-						fetchMetricDataOfHost(host);
-						result.add(host);
+						Host host = null;
+						CloudifyHost tempHost = new CloudifyHost();
+						tempHost.setAddress((String)node.get("host-list"));
+						tempHost.setName((String)node.get("host-list"));
+						for(Host h : hosts){
+							if(h.equals(tempHost)){
+								host = h;
+								host.setState(MONSTATE_SAME);
+								break;
+							}
+						}
+						if(host == null){
+							tempHost.setUsername(node.containsKey("username") ? (String)node.get("username") : username);
+							tempHost.setPassword(node.containsKey("password") ? (String)node.get("password") : password);
+							hosts.add(tempHost);
+							fetchMetricDataOfHost(tempHost);
+						}
 					}
 				}
 			}
@@ -75,16 +85,16 @@ public class CloudifyHostDataFetcher implements HostDataFetcher{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return result;
 	}
 	private void fetchMetricDataOfHost(CloudifyHost host){
+		List<MetricData> metricDatas = new ArrayList<MetricData>();
 		if(ssh.connect(host.getAddress()) && ssh.auth(host.getUsername(), host.getPassword())){
 			String meminfo = ssh.excute("cat /proc/meminfo");
 			String cpuinfo = ssh.excute("cat /proc/cpuinfo");
 			StringTokenizer memStk = new StringTokenizer(meminfo);
 			StringTokenizer cpuStk1 = new StringTokenizer(cpuinfo,"\n");
 			memStk.nextToken();
-			host.getMetrics().add(new MetricData("MemTotal", Integer.parseInt(memStk.nextToken()),"kB"));
+			metricDatas.add(new MetricData("MemTotal", Integer.parseInt(memStk.nextToken())));
 			for(int i=0;i<6;i++){
 				cpuStk1.nextToken();
 			}
@@ -92,8 +102,9 @@ public class CloudifyHostDataFetcher implements HostDataFetcher{
 			for(int i=0;i<3;i++){
 				cpuStk.nextToken();
 			}
-			host.getMetrics().add(new MetricData("Cpu", Double.parseDouble(cpuStk.nextToken()),"MHz"));
+			metricDatas.add(new MetricData("Cpu", Double.parseDouble(cpuStk.nextToken())));
 		}
+		host.setProps(metricDatas);
 	}
 	
 }

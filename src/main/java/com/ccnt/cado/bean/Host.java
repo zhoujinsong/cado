@@ -3,15 +3,21 @@ package com.ccnt.cado.bean;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Host {
+public class Host extends MonitorObject{
+	private int id;
 	private String address;
 	private String name;
 	private List<ServiceInstance> instances;
-	private List<MetricData> metrics;
+	private List<MetricData> Props;
 	public Host() {
 		super();
 		this.instances = new ArrayList<ServiceInstance>();
-		this.metrics = new ArrayList<MetricData>();
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
 	}
 	public String getAddress() {
 		return address;
@@ -31,11 +37,17 @@ public class Host {
 	public void setInstances(List<ServiceInstance> instances) {
 		this.instances = instances;
 	}
-	public List<MetricData> getMetrics() {
-		return metrics;
+	public List<MetricData> getProps() {
+		return Props;
 	}
-	public void setMetrics(List<MetricData> metrics) {
-		this.metrics = metrics;
+	public void setProps(List<MetricData> props) {
+		Props = props;
 	}
-	
+	@Override
+	public boolean equals(Object o){
+		if(!(o instanceof Host)){
+			return false;
+		}
+		return name.equals(((Host) o).getName());
+	}
 }
