@@ -391,7 +391,6 @@ public class CloudifyFactory implements PlatformFactory{
 		SERVICE_INSTANCES.setCommand("http://{address}:{port}/service/applications/{applicationName}/services/{serviceName}/instances");
 		SERVICE_INSTANCES.setCommandResolver(new CommandResolver() {
 			
-			@SuppressWarnings("unchecked")
 			@Override
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -540,7 +539,7 @@ public class CloudifyFactory implements PlatformFactory{
 			}
 		});
 		INSTANCE_METRIC.setCommandExcutor(REST_EXECUTOR);
-		INSTANCE_METRIC.setCycle(0);
+		INSTANCE_METRIC.setCycle(60);
 		
 		INSTANCE_METRIC_IO = new Metric();
 		INSTANCE_METRIC_IO.setCommand("cat /proc/{pid}/io");
@@ -587,8 +586,58 @@ public class CloudifyFactory implements PlatformFactory{
 			}
 		});
 		INSTANCE_METRIC_IO.setCommandExcutor(SSH_EXECUTOR);
-		INSTANCE_METRIC_IO.setCycle(0);
+		INSTANCE_METRIC_IO.setCycle(60);
+		
+		HOST_METRIC = new Metric();
+		HOST_METRIC.setCommand("vmstat 1 5");
+		HOST_METRIC.setCommandResolver(new CommandResolver() {
+			
+			@Override
+			public void resolve(String response, MonitorObject object,
+					DataFetchScheduler scheduler, DataStorer dataStorer) {
+				MetricData data = object.getMetric();
+				String[] array = response.split("\n");
+				int free = 0,bi = 0,bo = 0,id = 0;
+				for(int i=2;i<array.length;i++){
+					StringTokenizer st = new StringTokenizer(array[i]);
+					for(int j=0;j<3;j++){
+						st.nextToken();
+					}
+					free += Integer.parseInt(st.nextToken());
+					for(int j=0;j<4;j++){
+						st.nextToken();
+					}
+					bi += Integer.parseInt(st.nextToken());
+					bo += Integer.parseInt(st.nextToken());
+					for(int j=0;j<4;j++){
+						st.nextToken();
+					}
+					id += Integer.parseInt(st.nextToken());
+				}
+				data.getDatas().put("free_memory", free/5);
+				data.getDatas().put("io_bi", bi/5);
+				data.getDatas().put("io_bo", bo/5);
+				data.getDatas().put("cpu_id", id/5);
+				data.setTime(new Date());
+				data.setMonitorObject(object);
+				dataStorer.put(data);
+			}
+		});
+		HOST_METRIC.setCommandArgumentLoader(new CommandArgumentLoader() {
+			
+			@Override
+			public Map<String, Object> getArguments(MonitorObject obj) {
+				Map<String,Object> arguments = new HashMap<String,Object>();
+				arguments.put("address", obj.getAttributes().get("address"));
+				arguments.put("username", obj.getAttributes().get("username"));
+				arguments.put("password", obj.getAttributes().get("password"));
+				return arguments;
+			}
+		});
+		HOST_METRIC.setCommandExcutor(SSH_EXECUTOR);
+		HOST_METRIC.setCycle(60);
 	}
+	
 	private final RestCommandExecutor REST_EXECUTOR = new RestCommandExecutor();
 	private final SSHCommandExecutor SSH_EXECUTOR = new SSHCommandExecutor();
 	private final Metric PLATFORM_APPS;
@@ -601,6 +650,7 @@ public class CloudifyFactory implements PlatformFactory{
 	private final Metric SERVICE_INSTANCES;
 	private final Metric INSTANCE_METRIC;
 	private final Metric INSTANCE_METRIC_IO;
+	private final Metric HOST_METRIC;
 	
 	@Override
 	public MonitorObject createPlatform(Map<String, Object> attributes) {
@@ -636,6 +686,8 @@ public class CloudifyFactory implements PlatformFactory{
 		attri.put("name", "network");
 		devices.add(CloudifyFactory.getFactory().createDevice(attri,fath));
 		host.getSons().put("devices", devices);
+		host.setMetric(new MetricData());
+		host.getMetrics().add(HOST_METRIC);
 		return host;
 	}
 	@Override
