@@ -1,14 +1,15 @@
 package com.ccnt.cado.datastorage;
 
 import java.util.List;
+import java.util.Map;
 
-import com.ccnt.cado.bean.Application;
-import com.ccnt.cado.bean.Host;
-import com.ccnt.cado.bean.MonitorData;
-import com.ccnt.cado.bean.Service;
-import com.ccnt.cado.bean.ServiceInstance;
+import com.ccnt.cado.datafetch.MetricData;
+import com.ccnt.cado.datafetch.MonitorObject;
 
 public interface DataStorer {
-	public void storeData(MonitorData data);
-	public MonitorData getData();
+	public List<Map<String,Object>> getMonitorObjects(Map<String,Object> queryConditions);
+	public void dropAll();
+	public void put(MonitorObject object);
+	public void put(MetricData metricData);
+	public void remove(MonitorObject object);
 }
