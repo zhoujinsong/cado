@@ -4,11 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Logger {
-	private final Log log;
-
+	private Log log;
 	public Logger() {
 		super();
-		log = LogFactory.getLog(getClass());
+		this.log = LogFactory.getLog(getClass());
+		
 	}
 	public void debug(String logInfo){
 		if(log.isDebugEnabled()){

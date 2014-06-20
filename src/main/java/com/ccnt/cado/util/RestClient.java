@@ -20,6 +20,7 @@ import com.ccnt.cado.exception.RestException;
 public class RestClient extends Logger{
 	private HttpClient client;
 	public RestClient() {
+		super();
 		client = new HttpClient();
 	}
 	public String get(String url) throws RestException{
