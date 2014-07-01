@@ -70,7 +70,6 @@ public class MongoDataStorer implements DataStorer{
 		idColl.update(new BasicDBObject("_id",collName),new BasicDBObject("$set",new BasicDBObject("currentId",id)));
 		return id;
 	}
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(MonitorObject object) {
 		DBCollection monitorObjectColl = db.getCollection(COLLNAME_MONITOROBJECT);

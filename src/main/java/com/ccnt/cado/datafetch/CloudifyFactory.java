@@ -388,9 +388,10 @@ public class CloudifyFactory implements PlatformFactory{
 		APP_SERVICES.setCycle(0);
 		
 		SERVICE_INSTANCES = new Metric();
-		SERVICE_INSTANCES.setCommand("http://{address}:{port}/service/applications/{applicationName}/services/{serviceName}/instances");
+		SERVICE_INSTANCES.setCommand("http://{address}:{port}/service/applications/{applicationName}/services/description");
 		SERVICE_INSTANCES.setCommandResolver(new CommandResolver() {
 			
+			@SuppressWarnings("unchecked")
 			@Override
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -404,37 +405,46 @@ public class CloudifyFactory implements PlatformFactory{
 						List<MonitorObject> instances = (List<MonitorObject>) object.getSons().get("instances");
 						List<Map<String,Object>> attributesArray = new ArrayList<Map<String,Object>>();
 						List<Map<String,MonitorObject>> fathersArray = new ArrayList<Map<String,MonitorObject>>();
-						Map<?,?> instanceDes = (Map<?, ?>) map.get("response");
-						for(Entry<?,?> entry :instanceDes.entrySet()){
-							Map<String,Object> attributes = new HashMap<String,Object>();
-							Map<String,MonitorObject> fathers = new HashMap<String,MonitorObject>();
-							attributes.put("instanceId", entry.getKey());
-							String address = (String)entry.getValue();
-							address = address.substring(0, address.length()-1);
-							MonitorObject host = null;
-							synchronized (platform) {
-								while(true){
-									for(MonitorObject obj : hosts){
-										if(obj.getAttributes().get("address").equals(address)){
-											host = obj;
-											break;
+						
+						List<Map<?,?>> appDeses = (List<Map<?, ?>>) map.get("response");
+						for(Map<?,?> appDes : appDeses){
+							List<Map<?,?>> serviceDeses = (List<Map<?, ?>>) appDes.get("servicesDescription");
+							for(Map<?,?> serviceDes : serviceDeses){
+								if(object.getAttributes().get("name").equals(serviceDes.get("serviceName"))){
+									List<Map<?,?>> instanceDeses = (List<Map<?, ?>>) serviceDes.get("instancesDescription");
+									for(Map<?,?> instanceDes : instanceDeses){
+										Map<String,Object> attributes = new HashMap<String,Object>();
+										Map<String,MonitorObject> fathers = new HashMap<String,MonitorObject>();
+										attributes.put("instanceId", instanceDes.get("instanceId"));
+										String address = (String) instanceDes.get("hostAddress");
+										MonitorObject host = null;
+										synchronized (platform) {
+											while(true){
+												for(MonitorObject obj : hosts){
+													if(obj.getAttributes().get("address").equals(address)){
+														host = obj;
+														break;
+													}
+												}
+												if(host != null){
+													break;
+												}else{
+													try {
+														platform.wait();
+													} catch (InterruptedException e) {
+														e.printStackTrace();
+													}
+												}
+											}
 										}
+										fathers.put("host", host);
+										fathers.put("service", object);
+										attributesArray.add(attributes);
+										fathersArray.add(fathers);
 									}
-									if(host != null){
-										break;
-									}else{
-										try {
-											platform.wait();
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-										}
-									}
+									break;
 								}
 							}
-							fathers.put("host", host);
-							fathers.put("service", object);
-							attributesArray.add(attributes);
-							fathersArray.add(fathers);
 						}
 						for(MonitorObject monitorObject : instances){
 							boolean tag = true;
