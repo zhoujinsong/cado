@@ -9,7 +9,7 @@ import com.ccnt.cado.datastorage.DataStorer;
 
 public class DataFetchJob implements Job{
 
-	@Override
+	
 	public void execute(JobExecutionContext ctx) throws JobExecutionException {
 		JobDataMap jobDataMap = ctx.getJobDetail().getJobDataMap();
 		MonitorObject obj = (MonitorObject) jobDataMap.get("monitorObj");

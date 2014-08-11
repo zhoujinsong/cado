@@ -70,7 +70,7 @@ public class MongoDataStorer implements DataStorer{
 		idColl.update(new BasicDBObject("_id",collName),new BasicDBObject("$set",new BasicDBObject("currentId",id)));
 		return id;
 	}
-	@Override
+	
 	public void put(MonitorObject object) {
 		DBCollection monitorObjectColl = db.getCollection(COLLNAME_MONITOROBJECT);
 		BasicDBObject doc = new BasicDBObject();
@@ -85,7 +85,7 @@ public class MongoDataStorer implements DataStorer{
 		}
 		monitorObjectColl.insert(doc);
 	}
-	@Override
+	
 	public void put(MetricData metricData) {
 		DBCollection metricDataColl = db.getCollection(COLLNAME_METRICDATA);
 		BasicDBObject doc = new BasicDBObject();
@@ -99,7 +99,7 @@ public class MongoDataStorer implements DataStorer{
 		metricDataColl.insert(doc);
 	}
 
-	@Override
+	
 	public void remove(MonitorObject object) {
 		DBCollection monitorObjectColl = db.getCollection(COLLNAME_MONITOROBJECT);
 		monitorObjectColl.remove(new BasicDBObject("_id",object.getAttributes().get("_id")));
@@ -111,7 +111,7 @@ public class MongoDataStorer implements DataStorer{
 	}
 
 
-	@Override
+	
 	public List<Map<String,Object>> getMonitorObjects(Map<String, Object> queryConditions) {
 		List<Map<String,Object>> attributesArray = new ArrayList<Map<String,Object>>();
 		DBCollection monitorObjectColl = db.getCollection(COLLNAME_MONITOROBJECT);
@@ -128,7 +128,7 @@ public class MongoDataStorer implements DataStorer{
 		return attributesArray;
 	}
 
-	@Override
+	
 	public void dropAll() {
 		db.getCollection(COLLNAME_MONITOROBJECT).drop();
 		db.getCollection(COLLNAME_METRICDATA).drop();

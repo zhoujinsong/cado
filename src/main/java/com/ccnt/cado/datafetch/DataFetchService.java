@@ -17,7 +17,7 @@ public class DataFetchService implements Service{
 		this.dataFetchScheduler = new DataFetchScheduler(dataStorer);
 	}
 
-	@Override
+	
 	public void start() {
 		dataFetchScheduler.start();
 		Map<String,Object> query = new HashMap<String,Object>();
@@ -35,7 +35,7 @@ public class DataFetchService implements Service{
 		}
 	}
 
-	@Override
+	
 	public void stop() {
 		dataFetchScheduler.stop();
 	}

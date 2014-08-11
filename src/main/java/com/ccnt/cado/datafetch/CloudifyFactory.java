@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
@@ -32,7 +30,7 @@ public class CloudifyFactory implements PlatformFactory{
 		PLATFORM_APPS = new Metric();
 		PLATFORM_APPS.setCommand("http://{address}:{port}/service/applications/description");
 		PLATFORM_APPS.setCommandResolver(new CommandResolver(){
-			@Override
+			
 			@SuppressWarnings("unchecked")
 			public void resolve(String response,MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
@@ -80,7 +78,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		PLATFORM_APPS.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> map = new HashMap<String,Object>();
 				Map<String,Object> attributes = obj.getAttributes();
@@ -97,7 +95,7 @@ public class CloudifyFactory implements PlatformFactory{
 		PLATFORM_HOSTS.setCommand("http://{address}:{port}/{version}/templates");
 		PLATFORM_HOSTS.setCommandResolver(new CommandResolver(){
 			@SuppressWarnings("unchecked")
-			@Override
+			
 			public void resolve(String response,MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
 				try {
@@ -156,7 +154,7 @@ public class CloudifyFactory implements PlatformFactory{
 			}
 		});
 		PLATFORM_HOSTS.setCommandArgumentLoader(new CommandArgumentLoader() {
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> map = new HashMap<String,Object>();
 				Map<String,Object> attributes = obj.getAttributes();
@@ -173,7 +171,7 @@ public class CloudifyFactory implements PlatformFactory{
 		CPU_CORES.setCommand("cat /proc/cpuinfo");
 		CPU_CORES.setCommandResolver(new CommandResolver() {
 			
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				List<Map<String,Object>> cores = new ArrayList<Map<String,Object>>();
 				String[] coreInfos = response.split("processor");
@@ -206,7 +204,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		CPU_CORES.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				MonitorObject host = obj.getFathers().get("host");
 				Map<String,Object> arguments = new HashMap<String,Object>();
@@ -223,7 +221,7 @@ public class CloudifyFactory implements PlatformFactory{
 		MEMORY_SIZE.setCommand("cat /proc/meminfo");
 		MEMORY_SIZE.setCommandResolver(new CommandResolver() {
 			
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				StringTokenizer memoryST = new StringTokenizer(response);
 				memoryST.nextToken();
@@ -233,7 +231,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		MEMORY_SIZE.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				MonitorObject host = obj.getFathers().get("host");
 				Map<String,Object> arguments = new HashMap<String,Object>();
@@ -250,7 +248,7 @@ public class CloudifyFactory implements PlatformFactory{
 		IO_READSPEED.setCommand("echo {password} | sudo -S hdparm -Tt /dev/sda");
 		IO_READSPEED.setCommandResolver(new CommandResolver() {
 			
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				String[] array = response.split("=");
 				StringTokenizer speedST = new StringTokenizer(array[2]);
@@ -260,7 +258,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		IO_READSPEED.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				MonitorObject host = obj.getFathers().get("host");
 				Map<String,Object> arguments = new HashMap<String,Object>();
@@ -277,7 +275,7 @@ public class CloudifyFactory implements PlatformFactory{
 		NETWORK_DOWNLOADSPEED.setCommand("wget -O /dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip");
 		NETWORK_DOWNLOADSPEED.setCommandResolver(new CommandResolver() {
 			
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				Double speed = 0.0;
 				Pattern pattern = Pattern.compile("\\(.*B/s\\)");
@@ -306,7 +304,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		NETWORK_DOWNLOADSPEED.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				MonitorObject host = obj.getFathers().get("host");
 				Map<String,Object> arguments = new HashMap<String,Object>();
@@ -324,7 +322,7 @@ public class CloudifyFactory implements PlatformFactory{
 		APP_SERVICES.setCommandResolver(new CommandResolver() {
 			
 			@SuppressWarnings("unchecked")
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
 				try {
@@ -374,7 +372,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		APP_SERVICES.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> arguments = new HashMap<String,Object>();
 				MonitorObject platform = obj.getFathers().get("platform");
@@ -392,7 +390,7 @@ public class CloudifyFactory implements PlatformFactory{
 		SERVICE_INSTANCES.setCommandResolver(new CommandResolver() {
 			
 			@SuppressWarnings("unchecked")
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				ObjectMapper mapper = new ObjectMapper();
 				MonitorObject application = object.getFathers().get("application");
@@ -477,7 +475,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		SERVICE_INSTANCES.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> arguments = new HashMap<String,Object>();
 				MonitorObject application = obj.getFathers().get("application");
@@ -497,7 +495,7 @@ public class CloudifyFactory implements PlatformFactory{
 		INSTANCE_METRIC.setCommandResolver(new CommandResolver() {
 			
 			@SuppressWarnings("unchecked")
-			@Override
+			
 			public void resolve(String response, MonitorObject object,DataFetchScheduler scheduler,DataStorer dataStorer) {
 				MetricData metricData = (MetricData) object.getMetric();
 				ObjectMapper mapper = new ObjectMapper();
@@ -533,7 +531,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		INSTANCE_METRIC.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> arguments = new HashMap<String,Object>();
 				MonitorObject service = obj.getFathers().get("service");
@@ -554,7 +552,7 @@ public class CloudifyFactory implements PlatformFactory{
 		INSTANCE_METRIC_IO = new Metric();
 		INSTANCE_METRIC_IO.setCommand("cat /proc/{pid}/io");
 		INSTANCE_METRIC_IO.setCommandResolver(new CommandResolver() {
-			@Override
+			
 			public void resolve(String response, MonitorObject object,
 					DataFetchScheduler scheduler, DataStorer dataStorer) {
 				MetricData metricData = object.getMetric();
@@ -568,7 +566,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		INSTANCE_METRIC_IO.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> arguments = new HashMap<String,Object>();
 				MetricData metricData = obj.getMetric();
@@ -602,7 +600,7 @@ public class CloudifyFactory implements PlatformFactory{
 		HOST_METRIC.setCommand("vmstat 1 5");
 		HOST_METRIC.setCommandResolver(new CommandResolver() {
 			
-			@Override
+			
 			public void resolve(String response, MonitorObject object,
 					DataFetchScheduler scheduler, DataStorer dataStorer) {
 				MetricData data = object.getMetric();
@@ -635,7 +633,7 @@ public class CloudifyFactory implements PlatformFactory{
 		});
 		HOST_METRIC.setCommandArgumentLoader(new CommandArgumentLoader() {
 			
-			@Override
+			
 			public Map<String, Object> getArguments(MonitorObject obj) {
 				Map<String,Object> arguments = new HashMap<String,Object>();
 				arguments.put("address", obj.getAttributes().get("address"));
@@ -662,7 +660,7 @@ public class CloudifyFactory implements PlatformFactory{
 	private final Metric INSTANCE_METRIC_IO;
 	private final Metric HOST_METRIC;
 	
-	@Override
+	
 	public MonitorObject createPlatform(Map<String, Object> attributes) {
 		MonitorObject platform = new MonitorObject();
 		platform.setAttributes(attributes);
@@ -674,7 +672,7 @@ public class CloudifyFactory implements PlatformFactory{
 		platform.getMetrics().add(PLATFORM_HOSTS);
 		return platform;
 	}
-	@Override
+	
 	public MonitorObject createHost(Map<String, Object> attributes,Map<String,MonitorObject> fathers) {
 		MonitorObject host = new MonitorObject();
 		host.setAttributes(attributes);
@@ -700,7 +698,7 @@ public class CloudifyFactory implements PlatformFactory{
 		host.getMetrics().add(HOST_METRIC);
 		return host;
 	}
-	@Override
+	
 	public MonitorObject createApplication(Map<String, Object> attributes,Map<String,MonitorObject> fathers) {
 		MonitorObject application = new MonitorObject();
 		application.setAttributes(attributes);
@@ -710,7 +708,7 @@ public class CloudifyFactory implements PlatformFactory{
 		application.getMetrics().add(APP_SERVICES);
 		return application;
 	}
-	@Override
+	
 	public MonitorObject createService(Map<String, Object> attributes,Map<String,MonitorObject> fathers) {
 		MonitorObject service = new MonitorObject();
 		service.setAttributes(attributes);
@@ -720,7 +718,7 @@ public class CloudifyFactory implements PlatformFactory{
 		service.getMetrics().add(SERVICE_INSTANCES);
 		return service;
 	}
-	@Override
+	
 	public MonitorObject createInstance(Map<String, Object> attributes,Map<String,MonitorObject> fathers) {
 		MonitorObject instance = new MonitorObject();
 		instance.setAttributes(attributes);
@@ -731,7 +729,7 @@ public class CloudifyFactory implements PlatformFactory{
 		instance.getMetrics().add(INSTANCE_METRIC_IO);
 		return instance;
 	}
-	@Override
+	
 	public MonitorObject createDevice(Map<String, Object> attributes,Map<String,MonitorObject> fathers) {
 		MonitorObject device = new MonitorObject();
 		device.setAttributes(attributes);
