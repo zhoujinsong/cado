@@ -45,7 +45,7 @@ public class DataFetcher {
 			if(hostUsedInfos.size() > 0 ){
 				Map<String,Object> hostUsedInfo = hostUsedInfos.get(0);
 				usedCpu = (100 - (Integer)hostUsedInfo.get("cpu_id")) / 100.0 * staticUnit.getCpu();
-				usedMemory = staticUnit.getMemeory() - (Double)hostUsedInfo.get("free_memory");
+				usedMemory = staticUnit.getMemeory() - (Integer)hostUsedInfo.get("free_memory");
 				usedIO = ((Integer)hostUsedInfo.get("io_bi") + (Integer)hostUsedInfo.get("io_bo")) / 1000.0;
 			}
 			Unit usedUnit = new Unit(usedCpu, usedMemory, usedIO, -1);
@@ -65,14 +65,14 @@ public class DataFetcher {
 			}
 			double instanceCpu = 0, instanceMemory = 0, instanceIO = 0;
 			Map<String,Object> metricQueryConditions = new HashMap<String,Object>();
-			instanceQueryConditions.put("monitorObjectId", instanceInfo.get("_id"));
+			metricQueryConditions.put("monitorObjectId", instanceInfo.get("_id"));
 			List<Map<String,Object>> metricDatas = dataStorer.getNewestMetricDatas(metricQueryConditions, 2);
 			if(metricDatas.size() > 0){
 				instanceCpu = (Double)metricDatas.get(0).get("Process Cpu Usage") * vmCache.get((Integer)instanceInfo.get("host_Id")).getCpu();
-				instanceMemory = (Double)metricDatas.get(0).get("Total Process Residental Memory");
-				instanceIO = metricDatas.size() > 1 ? ((Integer)metricDatas.get(1).get("io_read_bytes") + (Integer)metricDatas.get(1).get("io_write_byte") - 
-						(Integer)metricDatas.get(0).get("io_read_bytes") - (Integer)metricDatas.get(1).get("io_write_byte")) / (60*1024*1024.0) : 
-							((Integer)metricDatas.get(0).get("io_read_bytes") + (Integer)metricDatas.get(1).get("io_write_byte")) / (60*1024*1024.0);
+				instanceMemory = (Integer)metricDatas.get(0).get("Total Process Residental Memory");
+				instanceIO = metricDatas.size() > 1 ? (Integer.parseInt((String)metricDatas.get(1).get("io_read_bytes")) + Integer.parseInt((String)metricDatas.get(1).get("io_write_bytes")) - 
+						Integer.parseInt((String)metricDatas.get(0).get("io_read_bytes")) - Integer.parseInt((String)metricDatas.get(0).get("io_write_bytes"))) / (60*1024*1024.0) : 
+							(Integer.parseInt((String)metricDatas.get(0).get("io_read_bytes")) + Integer.parseInt((String)metricDatas.get(0).get("io_write_bytes"))) / (60*1024*1024.0);
 			}
 			Unit metric = new Unit(instanceCpu, instanceMemory, instanceIO, -1);
 			Deploy deploy = new Deploy(metric, (Integer)instanceInfo.get("host_Id"), (Integer)instanceInfo.get("_id"));
@@ -101,7 +101,7 @@ public class DataFetcher {
 				}else if(deviceInfo.get("name").equals("memory")){
 					staticMemory = (Double)deviceInfo.get("size");
 				}else if(deviceInfo.get("name").equals("io")){
-					staticIO = (Double)deviceInfo.get("readSpread");
+					staticIO = (Double)deviceInfo.get("readSpeed");
 				}
 			}
 			Unit staticUnit = new Unit(staticCpu, staticMemory, staticIO, -1);

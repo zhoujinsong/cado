@@ -35,12 +35,19 @@ public class AHPScheduler implements AppScheduler{
 				double minPressure = Double.MAX_VALUE;
 				for(VM vm : vmList){
 					double currentPressure = deployPressure(d, vm);
-					if(currentPressure < minPressure && vm.getVmId() != d.getVmId()){
-						minVmId = vm.getVmId();
-						minPressure = currentPressure;
+					if(currentPressure != -1){
+						if(currentPressure < minPressure && vm.getVmId() != d.getVmId()){
+							minVmId = vm.getVmId();
+							minPressure = currentPressure;
+						}
 					}
+					
 				}
 				VM to = getVmById(minVmId, vmList);
+				if(minPressure == Double.MAX_VALUE){
+					System.out.println("无法合并！");
+					break;
+				}
 				migrate(d, to,from);
 				SysState ss = monitor.computeCurrentState(vmList, max, min);
 				System.out.println("迁移后系统  评分" + ss.getScore() +"  使用率："+ss.getUsage() +" 方差："+ss.getVariance());
@@ -81,6 +88,7 @@ public class AHPScheduler implements AppScheduler{
 			if(d.getVmId() == vm2.getVmId()){
 				if(canMigrate(d, vm1)){
 					this.migrate(d, vm1,vm2);
+					System.out.println("将应用"+d.getUnitId() +"从"+vm2.getVmId()+"合并到"+vm1.getVmId());
 				}else{
 					System.out.println("[ERROR] 目标主机没有可用空间，迁移失败");
 				}
@@ -124,6 +132,10 @@ public class AHPScheduler implements AppScheduler{
 	}
 	//计算虚拟机部署应用的压力值
 	public double deployPressure(Deploy d, VM vm){
+		if(!canMigrate(d, vm)){
+			System.out.println("主机"+vm.getVmId()+"空间不足，无法部署"+d.getUnitId());
+			return -1;
+		}
 		Unit used = vm.getUsedMetrics();
 		Unit max = vm.getStaticMetircs();
 		Unit tmp = new Unit(max.getCpu() - used.getCpu(),max.getMemeory() - used.getMemeory(),max.getIo() - used.getIo(), max.getNet() - used.getNet());
