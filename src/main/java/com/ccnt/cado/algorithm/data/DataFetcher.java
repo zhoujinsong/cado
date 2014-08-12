@@ -108,5 +108,6 @@ public class DataFetcher {
 			vmCache.put((Integer)hostInfo.get("_id"), staticUnit);
 		}
 		System.out.println("test");
+		System.out.println("test merge local");
 	}
 } 
