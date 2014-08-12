@@ -13,6 +13,7 @@ import java.util.Properties;
 
 
 
+
 import com.ccnt.cado.datafetch.MetricData;
 import com.ccnt.cado.datafetch.MonitorObject;
 import com.mongodb.BasicDBObject;
@@ -128,10 +129,25 @@ public class MongoDataStorer implements DataStorer{
 		return attributesArray;
 	}
 
+	public List<Map<String, Object>> getNewestMetricDatas(
+			Map<String, Object> queryConditions, int num) {
+		List<Map<String,Object>> metricDatas = new ArrayList<Map<String,Object>>();
+		DBCollection monitorObjectColl = db.getCollection(COLLNAME_METRICDATA);
+		DBCursor cursor = monitorObjectColl.find(new BasicDBObject(queryConditions)).limit(num).sort(new BasicDBObject("time",-1));
+		while(cursor.hasNext()){
+			Map<String,Object> attributes = new HashMap<String,Object>();
+			DBObject dbObject = cursor.next();
+			for(String key : dbObject.keySet()){
+				attributes.put(key, dbObject.get(key));
+			}
+			metricDatas.add(attributes);
+		}
+		cursor.close();
+		return metricDatas;
+	}
 	
 	public void dropAll() {
 		db.getCollection(COLLNAME_MONITOROBJECT).drop();
 		db.getCollection(COLLNAME_METRICDATA).drop();
 	}
-
 }

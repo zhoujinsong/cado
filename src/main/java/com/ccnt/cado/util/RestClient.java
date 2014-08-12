@@ -32,7 +32,7 @@ public class RestClient extends Logger{
 		try {
 			stateCode = client.executeMethod(method);
 			switch (stateCode){
-			case 200:
+			case 200 :
 				result = inputStream2String(method.getResponseBodyAsStream());
 				break;
 			default:
