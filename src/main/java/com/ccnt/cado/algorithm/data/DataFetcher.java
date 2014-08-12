@@ -106,6 +106,7 @@ public class DataFetcher {
 			}
 			Unit staticUnit = new Unit(staticCpu, staticMemory, staticIO, -1);
 			vmCache.put((Integer)hostInfo.get("_id"), staticUnit);
-		}	
+		}
+		System.out.println("test");
 	}
 } 
