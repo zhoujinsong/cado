@@ -15,7 +15,6 @@ public class QuartzServer {
 		try {
 			q.startScheduler();
 		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -28,7 +27,7 @@ public class QuartzServer {
 				.newTrigger().withIdentity("trigger1","default_group")
 				.startNow()
 				.withSchedule(SimpleScheduleBuilder.simpleSchedule()
-						.withIntervalInHours(1)
+						.withIntervalInSeconds(20)
 						.repeatForever())
 				.build();
 

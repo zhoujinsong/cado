@@ -20,9 +20,11 @@ public class ScheduleJob implements Job{
 	private AppScheduler scheduler;
 
 	public void execute(JobExecutionContext arg0) throws JobExecutionException {
-		Unit weigh = new Unit(0.25, 0.25, 0.25, 0.25);
+		Unit weigh = new Unit(0.5, 0.4, 0.1, 0);
+		scheduler = new AHPScheduler(weigh);
+		
 		DataFetcher fetcher = new DataFetcher();
 		SystemMonitor monitor = new SystemMonitor(weigh, fetcher);
-		List<Deploy> result = scheduler.doSchedule(monitor, 1, 0);
+		List<Deploy> result = scheduler.doSchedule(monitor, 0.7, 0.5);
 	}
 }
