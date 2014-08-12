@@ -8,6 +8,7 @@ import com.ccnt.cado.datafetch.MonitorObject;
 
 public interface DataStorer {
 	public List<Map<String,Object>> getMonitorObjects(Map<String,Object> queryConditions);
+	public List<Map<String,Object>> getNewestMetricDatas(Map<String,Object> queryConditions, int num);
 	public void dropAll();
 	public void put(MonitorObject object);
 	public void put(MetricData metricData);
