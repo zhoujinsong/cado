@@ -89,24 +89,6 @@ public class SystemMonitor {
 		
 		return state;
 	}
-	/*public double computeSysState(List<VM> vms, double max, double min){
-		
-		double result = 0.0;
-
-		Unit used, vmstatic;
-		for(VM vm : vms) {
-			used = vm.getUsedMetrics();
-			vmstatic
-			= vm.getStaticMetircs();
-			
-			double usage = weigh.getCpu() * used.getCpu() / vmstatic.getCpu() +
-			weigh.getMemeory() * used.getMemeory() / vmstatic.getMemeory() +
-			weigh.getIo() * used.getIo() / vmstatic.getIo() + 
-			weigh.getNet() * used.getNet() / vmstatic.getNet();
-			
-		}	
-		return result / vms.size();
-	}*/
 	//计算消耗率最大的虚拟机
 	public VM getTop(List<VM> vms, Unit weigh){
 		double max = Double.MIN_VALUE;

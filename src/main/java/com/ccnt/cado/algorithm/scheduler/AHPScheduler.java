@@ -20,51 +20,68 @@ public class AHPScheduler implements AppScheduler{
 		List<VM> vmList = monitor.getFetcher().getVMsData();
 		SysState state = monitor.computeSysState(max, min);
 		System.out.println("计算系统当前状态      评分："+state.getScore() +" 使用率："+state.getUsage() +"  方差："+state.getVariance());
-		if(state.getUsage() > max){
-			//系统状态超过阈值，迁移
-			System.out.println("-----------------------------------------------------");
-			System.out.println("系统状态超过阈值，做迁移....");
-			double tmp = state.getUsage();
-			while(tmp > max){
-				VM from = monitor.getTop(vmList, ahpWeigh);
-				System.out.println("占用率最高的虚拟机："+from.getVmId());
-				Deploy d = monitor.computeMostConsume(from, deployList, ahpWeigh);
-				System.out.println("虚拟机"+from.getVmId()+"上最消耗资源的应用："+d.getUnitId());
-				//找压力最小的一台部署
-				int minVmId = Integer.MAX_VALUE;
-				double minPressure = Double.MAX_VALUE;
-				for(VM vm : vmList){
-					double currentPressure = deployPressure(d, vm);
-					if(currentPressure != -1){
-						if(currentPressure < minPressure && vm.getVmId() != d.getVmId()){
-							minVmId = vm.getVmId();
-							minPressure = currentPressure;
-						}
+		if(state.getScore() < 60){
+			System.out.println("系统状态不佳，进入优化阶段。。。");
+			if(state.getUsage() > max){
+				//系统状态超过阈值，迁移
+				System.out.println("-----------------------------------------------------");
+				System.out.println("系统状态超过阈值，做迁移....");
+				double tmp = state.getUsage();
+				while(tmp > max){
+					VM from = monitor.getTop(vmList, ahpWeigh);
+					System.out.println("占用率最高的虚拟机："+from.getVmId());
+					Deploy d = monitor.computeMostConsume(from, deployList, ahpWeigh);
+					System.out.println("虚拟机"+from.getVmId()+"上最消耗资源的应用："+d.getUnitId());
+					//找压力最小的一台部署
+					VM to = this.computeMinPressure(vmList, d);
+					if(to == null){
+						System.out.println("无法迁移，只有一台虚拟机");
+						break;
+					}else{
+						migrate(d, to,from);
+						SysState ss = monitor.computeCurrentState(vmList, max, min);
+						System.out.println("迁移后系统  评分" + ss.getScore() +"  使用率："+ss.getUsage() +" 方差："+ss.getVariance());
 					}
-					
 				}
-				VM to = getVmById(minVmId, vmList);
-				if(minPressure == Double.MAX_VALUE){
-					System.out.println("无法合并！");
-					break;
+			}else if(state.getUsage() < min){
+				//系统状态过低，合并
+				double tmp = state.getUsage();
+				while(tmp < min){
+					VM vm1 = monitor.getButtom(vmList, ahpWeigh);
+					vmList.remove(vm1);
+					VM vm2 = monitor.getButtom(vmList, ahpWeigh);
+					if(vm2 == null){
+						System.out.println("只有一台虚拟机，无法做合并");
+						break;
+					}else{
+						merge(vm2, vm1, deployList);
+						tmp = monitor.computeCurrentState(vmList, max, min).getUsage();
+					}
 				}
-				migrate(d, to,from);
-				SysState ss = monitor.computeCurrentState(vmList, max, min);
-				System.out.println("迁移后系统  评分" + ss.getScore() +"  使用率："+ss.getUsage() +" 方差："+ss.getVariance());
-				break;
 			}
-		}else if(state.getUsage() < min){
-			//系统状态过低，合并
-			double tmp = state.getUsage();
-			while(tmp < min){
-				VM vm1 = monitor.getButtom(vmList, ahpWeigh);
-				vmList.remove(vm1);
-				VM vm2 = monitor.getButtom(vmList, ahpWeigh);
-				merge(vm2, vm1, deployList);
-				//tmp = monitor.computeSysState(vmList);
-			}
+			
+		}else{
+			System.out.println("系统状态良好，无需优化。。。");
 		}
 		return deployList;
+	}
+	private VM computeMinPressure(List<VM> vmList, Deploy d) {
+		int minVmId = -1;
+		double minPressure = Double.MAX_VALUE;
+		for(VM vm : vmList){
+			double currentPressure = deployPressure(d, vm);
+			if(currentPressure != -1){
+				if(currentPressure < minPressure && vm.getVmId() != d.getVmId()){
+					minVmId = vm.getVmId();
+					minPressure = currentPressure;
+				}
+			}
+		}
+		if(minVmId == -1){
+			return null;
+		}else{
+			return getVmById(minVmId, vmList);
+		}
 	}
 	public VM getVmById(int id, List<VM> vms){
 		VM result = null;
@@ -90,7 +107,7 @@ public class AHPScheduler implements AppScheduler{
 					this.migrate(d, vm1,vm2);
 					System.out.println("将应用"+d.getUnitId() +"从"+vm2.getVmId()+"合并到"+vm1.getVmId());
 				}else{
-					System.out.println("[ERROR] 目标主机没有可用空间，迁移失败");
+					System.out.println("[ERROR] 目标主机没有可用空间");
 				}
 			}
 		}

@@ -25,6 +25,6 @@ public class ScheduleJob implements Job{
 		
 		DataFetcher fetcher = new DataFetcher();
 		SystemMonitor monitor = new SystemMonitor(weigh, fetcher);
-		List<Deploy> result = scheduler.doSchedule(monitor, 0.7, 0.5);
+		List<Deploy> result = scheduler.doSchedule(monitor, 0.9, 0.7);
 	}
 }
